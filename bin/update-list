@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -e
+
+dir="$(dirname $BASH_SOURCE)"
+cd $dir/..
+echo $(pwd)
+
+echo "List fetched on $(date "+%Y-%m-%d")" > bin/update-list-status.txt
+curl http://s3.amazonaws.com/alexa-static/top-1m.csv.zip > top-1m.csv.zip
+unzip -o top-1m.csv.zip && rm top-1m.csv.zip
+head -n 4000 < top-1m.csv | cut -d, -f2 | sort > top-4k.txt
+echo "<body><ul>" > top-4k.html
+for line in $(cat top-4k.txt) ; do
+  echo "<li><a href=\"http://$line\">$line</a></li>" >> top-4k.html
+done
+echo "</ul></body>" >> top-4k.html
